@@ -1,5 +1,5 @@
 # GLAD library implementation file
-glad.c
+lib/glad.c
 
 # CMake Build Directory
 cmake-build-debug
