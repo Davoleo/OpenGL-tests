@@ -1,7 +1,9 @@
 # GLAD library implementation file
 lib/glad.c
 
-# CMake Build Directory
+# CMake Build Directories
 cmake-build-debug
+cmake-build-release
+
 # IDEA project directory
 .idea

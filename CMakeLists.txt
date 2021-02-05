@@ -3,13 +3,14 @@ project(OpenGL_Tests)
 
 set(CMAKE_CXX_STANDARD 14)
 
+add_executable(${PROJECT_NAME} src/application.cpp)
+
+find_path(INCLUDES glfw.h D:/Everything/Coding/libs/C/include/GLFW)
+
 # Link all the header files
 include_directories(D:/Everything/Coding/libs/C/include)
 
-set(OGL_LIBS "${CMAKE_SOURCE_DIR}/lib")
-add_library(GLAD "D:/Everything/Coding/libs/C/include/glad/glad.h" "${OGL_LIBS}/glad.c")
+# Link to the compiled lib_src library
+find_library(OPENGL_LIBS glfw3 D:/Everything/Coding/libs/C/lib)
 
-# Link to the compiled GLFW library
-link_libraries(D:/Everything/Coding/libs/C/lib/glfw3.dll)
-
-add_executable(OpenGL_Tests main.cpp)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENGL_LIBS})
