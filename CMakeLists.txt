@@ -3,14 +3,18 @@ project(OpenGL_Tests)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(${PROJECT_NAME} src/application.cpp)
+set(SOURCE_FILES src/application.cpp)
 
-find_path(INCLUDES glfw.h D:/Everything/Coding/libs/C/include/GLFW)
+# add_library(GLFW_LIB STATIC IMPORTED)
+# set_property(TARGET GLFW_LIB PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/impl/libglfw3.a)
+find_library(GLFW_LIB /lib/impl/)
+# link_directories(/lib/impl/)
 
 # Link all the header files
-include_directories(D:/Everything/Coding/libs/C/include)
 
-# Link to the compiled lib_src library
-find_library(OPENGL_LIBS glfw3 D:/Everything/Coding/libs/C/lib)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib/include/)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENGL_LIBS})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+# link_libraries(PUBLIC ${GLFW_LIB})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${GLFW_LIB})
+# set_property(TARGET glfw3 PROPERTY INCLUDE_DIRECTORIES /lib/include/GLFW)
