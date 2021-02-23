@@ -1,6 +1,12 @@
 #define GLFW_DLL
 
+#include <GLEW/glew.h>
 #include <GLFW/glfw3.h>
+
+#include <iostream>
+
+//Static link
+//#define GLEW_STATIC
 
 int main()
 {
@@ -18,8 +24,14 @@ int main()
         return -1;
     }
 
-    /* Make the window's context current */
+    /* Make the window's context current (creates the rendering context) */
     glfwMakeContextCurrent(window);
+
+    if (glewInit() != GLEW_OK)
+        std::cout << "Error!" << std::endl;
+
+    //Print the supported OpenGL version
+    std::cout << glGetString(GL_VERSION) << std::endl;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
