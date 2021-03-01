@@ -44,8 +44,8 @@ int main()
     //Defining the buffer outside the frame loop
     float positions[6] = {
             -0.5, -0.5,
-            0, 0.5,
-            0.5, -0.5
+             0.0,  0.5,
+             0.5, -0.5
     };
 
     //Will be populated with the UID of the generated object in the GPU VRAM
@@ -57,6 +57,16 @@ int main()
     //GL_STATIC_DRAW is the mode that this buffer will be optimized for (can be STATIC or DYNAMIC data)
     //Docs: http://docs.gl/gl4/glBufferData
     glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+
+    //Params:
+    //1) The index of the attribute we want to define
+    //2) The count of things inside the attribute (must be 1..4)
+    //3) The type of data that we're providing
+    //4) Whether OpenGL should normalize values for you (for example a color component from 0 to 255 to a float 0..1)
+    //5) The total size of each vertex (sum of all the components)
+    //6) The offset of each component (a pointer)
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+    glEnableVertexAttribArray(0);
 
     //Will reset the buffer to be bound to nothing
     //glBindBuffer(GL_ARRAY_BUFFER, 0);
