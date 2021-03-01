@@ -68,6 +68,19 @@ int main()
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
     glEnableVertexAttribArray(0);
 
+    //After the draw call shaders are called sequentially
+    //Two kinds of shaders:
+    //- Vertex Shaders (called for each vertex you're trying to render)
+    //      Its primary purpose is to define where you should be seeing the vertices
+    //- Fragment Shaders
+    //      Also called pixel shader | is called when each pixel on the screen is rasterized
+    //      Primary purpose is to determine the color each pixel should be
+    //- other shaders
+
+//    std::string vertexShader = R"GLSL(#version 330 core
+//)GLSL";
+//    unsigned int shader = createShader()
+
     //Will reset the buffer to be bound to nothing
     //glBindBuffer(GL_ARRAY_BUFFER, 0);
 
