@@ -8,6 +8,57 @@
 //Static link
 //#define GLEW_STATIC
 
+static unsigned int compileShader(unsigned int type, const std::string& source)
+{
+    //Creates a shader handle and returns the id
+    unsigned int id = glCreateShader(type);
+    //Get a pointer to the beginning of the shader source
+    const char* src = source.c_str();
+
+    //Shader ID | Count of shaders | double pointer to the source | if the last param is null the string is espected to be null terminated
+    glShaderSource(id, 1, &src, nullptr);
+    glCompileShader(id);
+
+    // Retrieve the result of compiling shaders
+    int result;
+    glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+    if (result == GL_FALSE) {
+        int length;
+        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+        char message[length];
+        glGetShaderInfoLog(id, length, &length, message);
+        std::cout << "Failed to compile " << (type == GL_VERTEX_SHADER ? "Vertex" : "Fragment") << " shader!" << std::endl;
+        std::cout << message << std::endl;
+        glDeleteShader(id);
+        return 0;
+    }
+
+    return id;
+}
+
+/// Get the two shaders link them and a unique identifier for the shader program
+/// \param vertexShader
+/// \param fragmentShader
+/// \return unique identifier for the shader program
+static unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader)
+{
+    unsigned int program = glCreateProgram();
+    unsigned int vertexSh = compileShader(GL_VERTEX_SHADER, vertexShader);
+    unsigned int fragmentSh = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
+
+    //Linking the two shaders
+    glAttachShader(program, vertexSh);
+    glAttachShader(program, fragmentSh);
+    glLinkProgram(program);
+    glValidateProgram(program);
+
+    //We can delete the intermediate files after compiling linking and validating shaders
+    glDeleteShader(vertexSh);
+    glDeleteShader(fragmentSh);
+
+    return program;
+}
+
 int main()
 {
     GLFWwindow* window;
