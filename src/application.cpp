@@ -8,6 +8,10 @@
 //Static link
 //#define GLEW_STATIC
 
+/// Compiles a shader given the source code as a string and the type of shader to compile
+/// \param type the type of shader to compile
+/// \param source the string that contains the source code of the shader program
+/// \return an UID corresponding to the compiled shader (ready to be linked)
 static unsigned int compileShader(unsigned int type, const std::string& source)
 {
     //Creates a shader handle and returns the id
@@ -17,42 +21,55 @@ static unsigned int compileShader(unsigned int type, const std::string& source)
 
     //Shader ID | Count of shaders | double pointer to the source | if the last param is null the string is espected to be null terminated
     glShaderSource(id, 1, &src, nullptr);
+    //Compiles the shader and stores the result of the compilation in the parameter called GL_COMPILE_STATUS
     glCompileShader(id);
 
     // Retrieve the result of compiling shaders
     int result;
+    //Gets a parameter of a shader object
+    //GL_COMPILE_STATUS - returns GL_TRUE if the last compile operation on shader was successful, and GL_FALSE otherwise.
+    //GL_INFO_LOG_LENGTH - params returns the number of characters in the information log for shader including the null termination character (i.e., the size of the character buffer required to store the information log). If shader has no information log, a value of 0 is returned.
     glGetShaderiv(id, GL_COMPILE_STATUS, &result);
     if (result == GL_FALSE) {
         int length;
+        //Get the length of the compile logging info and assign it to the length
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
         char message[length];
+        //Params: The shader object id | the size of the buffer | the actual used size is returned | the char buffer for the message to be stored
         glGetShaderInfoLog(id, length, &length, message);
         std::cout << "Failed to compile " << (type == GL_VERTEX_SHADER ? "Vertex" : "Fragment") << " shader!" << std::endl;
         std::cout << message << std::endl;
+        //Frees up memory space deleting the shader linked to the
         glDeleteShader(id);
         return 0;
     }
 
+    //Return the uid of the newly created shader
     return id;
 }
 
 /// Get the two shaders link them and a unique identifier for the shader program
 /// \param vertexShader
 /// \param fragmentShader
-/// \return unique identifier for the shader program
-static unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader)
+/// \return unique identifier to the linked shader program
+static unsigned int linkShaderProgram(const std::string& vertexShader, const std::string& fragmentShader)
 {
+    //Creates an empty shader program object shader can be attached to
     unsigned int program = glCreateProgram();
     unsigned int vertexSh = compileShader(GL_VERTEX_SHADER, vertexShader);
     unsigned int fragmentSh = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
-    //Linking the two shaders
+    //Attaching the two shaders with the empty program
     glAttachShader(program, vertexSh);
     glAttachShader(program, fragmentSh);
+    //Linking the shader program TODO More docs
     glLinkProgram(program);
+    //Validates the shader program: checks to see whether the executables contained in program
+    //can execute given the current OpenGL state.
+    //the result is stored in the param GL_VALIDATE_STATUS
     glValidateProgram(program);
 
-    //We can delete the intermediate files after compiling linking and validating shaders
+    //We can delete the intermediate compiled shader objects after linking and validating the shader program
     glDeleteShader(vertexSh);
     glDeleteShader(fragmentSh);
 
@@ -130,7 +147,7 @@ int main()
 
 //    std::string vertexShader = R"GLSL(#version 330 core
 //)GLSL";
-//    unsigned int shader = createShader()
+//    unsigned int shader = linkShaderProgram()
 
     //Will reset the buffer to be bound to nothing
     //glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -140,13 +157,6 @@ int main()
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
-
-        //Legacy OpenGL Way to create a triangle
-        //glBegin(GL_TRIANGLES);
-        //glVertex2f(-0.5, -0.5);
-        //glVertex2f(0, 0.5);
-        //glVertex2f(0.5, -0.5);
-        //glEnd();
 
         //Draw things when you don't have an index buffer
         //First parameter: the primitive you want to render
