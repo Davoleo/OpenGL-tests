@@ -126,6 +126,7 @@ int main()
     //Docs: http://docs.gl/gl4/glBufferData
     glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
 
+    //glVertexAttribPointer works on the boundBuffer
     //Params:
     //1) The index of the attribute we want to define
     //2) The count of things inside the attribute (must be 1..4)
@@ -145,9 +146,24 @@ int main()
     //      Primary purpose is to determine the color each pixel should be
     //- other shaders
 
-//    std::string vertexShader = R"GLSL(#version 330 core
-//)GLSL";
-//    unsigned int shader = linkShaderProgram()
+    //Location = 0 is the id of the vertex attribute pointer
+    //vec4 because gl_Position wants a vec4 (you can create a vec2 and convert it later tho)
+    std::string vertexShader = R"GLSL(#version 330 core
+layout(location = 0) in vec4 position;
+void main() {
+    gl_Position = position;
+}
+)GLSL";
+
+    std::string fragmentShader = R"GLSL(#version 330 core
+layout(location = 0) out vec4 color;
+void main() {
+    color = vec4(1.0, 0.0, 0.0, 1.0);
+}
+)GLSL";
+    unsigned int shader = linkShaderProgram(vertexShader, fragmentShader);
+    //Bind the shader to use when drawing
+    glUseProgram(shader);
 
     //Will reset the buffer to be bound to nothing
     //glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -171,6 +187,9 @@ int main()
         /* Poll for and process events */
         glfwPollEvents();
     }
+
+    //Delete the shader program to clean up resources
+    glDeleteProgram(shader);
 
     glfwTerminate();
     return 0;
