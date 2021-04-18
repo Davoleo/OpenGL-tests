@@ -4,9 +4,47 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
 
 //Static link
 //#define GLEW_STATIC
+
+struct ShaderProgramSource
+{
+    std::string vertex;
+    std::string fragment;
+};
+
+static ShaderProgramSource parseShader(const std::string& filepath) {
+    std::ifstream inputStream("res/shaders/basic.shader");
+
+    enum class ShaderType {
+        NONE = -1,
+        VERTEX = 0,
+        FRAGMENT = 1
+    };
+
+    std::string line;
+    std::stringstream shaders[2];
+    ShaderType type = ShaderType::NONE;
+    while (getline(inputStream, line)) {
+        if (line.find("#shader") != std::string::npos)
+        {
+            if (line.find("vertex") != std::string::npos)
+                type = ShaderType::VERTEX;
+            else if (line.find("fragment") != std::string::npos)
+                type = ShaderType::FRAGMENT;
+        }
+        else {
+            if (line.substr(0, 2) != "//")
+                shaders[(int)type] << line << '\n';
+        }
+    }
+
+    return { shaders[0].str(), shaders[1].str() };
+}
 
 /// Compiles a shader given the source code as a string and the type of shader to compile
 /// \param type the type of shader to compile
@@ -137,31 +175,13 @@ int main()
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
     glEnableVertexAttribArray(0);
 
-    //After the draw call shaders are called sequentially
-    //Two kinds of shaders:
-    //- Vertex Shaders (called for each vertex you're trying to render)
-    //      Its primary purpose is to define where you should be seeing the vertices
-    //- Fragment Shaders
-    //      Also called pixel shader | is called when each pixel on the screen is rasterized
-    //      Primary purpose is to determine the color each pixel should be
-    //- other shaders
+    ShaderProgramSource src = parseShader("res/shaders/basic.shader");
+//    std::cout << "VERTEX SHADER" << std::endl;
+//    std::cout << src.vertex << std::endl;
+//    std::cout << "FRAGMENT SHADER" << std::endl;
+//    std::cout << src.fragment << std::endl;
 
-    //Location = 0 is the id of the vertex attribute pointer
-    //vec4 because gl_Position wants a vec4 (you can create a vec2 and convert it later tho)
-    std::string vertexShader = R"GLSL(#version 330 core
-layout(location = 0) in vec4 position;
-void main() {
-    gl_Position = position;
-}
-)GLSL";
-
-    std::string fragmentShader = R"GLSL(#version 330 core
-layout(location = 0) out vec4 color;
-void main() {
-    color = vec4(1.0, 0.0, 0.0, 1.0);
-}
-)GLSL";
-    unsigned int shader = linkShaderProgram(vertexShader, fragmentShader);
+    unsigned int shader = linkShaderProgram(src.vertex, src.fragment);
     //Bind the shader to use when drawing
     glUseProgram(shader);
 
