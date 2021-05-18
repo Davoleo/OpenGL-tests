@@ -3,7 +3,7 @@ project(OpenGL_Tests)
 
 set(CMAKE_CXX_STANDARD 14)
 
-set(SOURCE_FILES src/application.cpp src/legacy_tryangles.cpp)
+set(SOURCE_FILES src/application.cpp src/legacy_tryangles.cpp src/index_buffers.cpp src/shader_assembler.h)
 
 # add_library(GLFW_LIB STATIC IMPORTED)
 # set_property(TARGET GLFW_LIB PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/impl/libglfw3.a)

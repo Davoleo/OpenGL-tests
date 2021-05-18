@@ -13,6 +13,8 @@
 
 #include "shader_assembler.h"
 
+#define DAV_TESTS_SHAPE 1
+
 int main()
 {
     GLFWwindow* window;
@@ -47,12 +49,27 @@ int main()
     // **State Machine**
 
     //Defining the buffer outside the frame loop
-    float positions[6] = {
-            -0.5, -0.5,
-             0.0,  0.5,
-             0.5, -0.5
+    float basicTriangle[6] = {
+            -0.5f, -0.5f,
+             0.0,  0.5f,
+             0.5f, -0.5f
     };
 
+    //Made up of 2 triangles but identical vertices are deduplicated
+    float square[] = {
+            -0.5f, -0.5f,   //0
+            0.5f, -0.5f,    //1
+            0.5f, 0.5f,     //2
+            -0.5f, 0.5f     //3
+    };
+
+    //Called index buffer
+    unsigned int squareIndices[] = {
+            0, 1, 2,
+            2, 3, 0
+    };
+
+#if DAV_TESTS_SHAPE == 0
     //Will be populated with the UID of the generated object in the GPU VRAM
     unsigned int buffer;
     glGenBuffers(1, &buffer);
@@ -61,7 +78,22 @@ int main()
     //Size is in bytes | you can place NULL in place of the third parameter in case you don't want to provide initial values for the buffer
     //GL_STATIC_DRAW is the mode that this buffer will be optimized for (can be STATIC or DYNAMIC data)
     //Docs: http://docs.gl/gl4/glBufferData
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), basicTriangle, GL_STATIC_DRAW);
+
+#elif DAV_TESTS_SHAPE == 1
+
+    //GPUs have triangles as their basic primitive shape
+    //since they have the lowest number of vertices to create a flat shape with a normal that points in a single direction
+    //all the other shapes are derivatives (like a square it's just 2 triangles)
+    //They allow us to reuse vertices instead of having to repeat coincident vertices like when we're drawing a square or whenever there are adjacent triangles
+
+    //ibo stands for Index Buffer Object | object id that represents the index buffer
+    unsigned int ibo;
+    glGenBuffers(1, &ibo);
+    //Specifies the meaning of the buffer
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof (unsigned int), squareIndices, GL_STATIC_DRAW);
+#endif
 
     //glVertexAttribPointer works on the boundBuffer
     //Params:
@@ -93,12 +125,18 @@ int main()
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
+#if DAV_TESTS_SHAPE == 0
         //Draw things when you don't have an index buffer
         //First parameter: the primitive you want to render
         //Second Parameter: the offset from the first item of the data buffer
         //Third Parameter: the number of indices (vertices) you want to render
         //It will draw depending ON THE BOUND buffer (you don't need to pass the buffer since openGL works as a state machine)
         glDrawArrays(GL_TRIANGLES, 0, 3);
+#elif DAV_TESTS_SHAPE == 1
+
+        //Drawing 2 triangles | 6 INDICES | The type | Since we've assigned the indices earlier
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+#endif
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
