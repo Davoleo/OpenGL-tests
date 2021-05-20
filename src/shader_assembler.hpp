@@ -2,8 +2,10 @@
 // Created by Davoleo on 18/05/2021.
 //
 
-#ifndef OPENGL_TESTS_SHADER_ASSEMBLER_H
-#define OPENGL_TESTS_SHADER_ASSEMBLER_H
+#ifndef OPENGL_TESTS_SHADER_ASSEMBLER_HPP
+#define OPENGL_TESTS_SHADER_ASSEMBLER_HPP
+
+#include <fstream>
 
 struct ShaderProgramSource
 {
@@ -108,4 +110,4 @@ static unsigned int linkShaderProgram(const std::string& vertexShader, const std
     return program;
 }
 
-#endif //OPENGL_TESTS_SHADER_ASSEMBLER_H
+#endif //OPENGL_TESTS_SHADER_ASSEMBLER_HPP

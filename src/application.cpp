@@ -4,14 +4,36 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
-#include <fstream>
-#include <string>
 #include <sstream>
 
 //Static link
 //#define GLEW_STATIC
 
-#include "shader_assembler.h"
+#include "shader_assembler.hpp"
+
+#pragma region ERROR HANDLING
+
+#define ASSERT(x) if (!(x)) __builtin_trap();
+
+#define GLCall(x) GLClearError(); \
+x;                                \
+ASSERT(GLLogCall(#x, __FILE__, __LINE__))
+
+static void GLClearError() {
+    while (glGetError() != GL_NO_ERROR);
+}
+
+static bool GLLogCall(const char* function, const char* file, int line) {
+    while (GLenum error = glGetError()) {
+        std::cout << "[OpenGL Error] (" << error << ")" << function
+        << " " << file << ":" << line << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+#pragma endregion
 
 #define DAV_TESTS_SHAPE 1
 
@@ -72,13 +94,13 @@ int main()
 #if DAV_TESTS_SHAPE == 0
     //Will be populated with the UID of the generated object in the GPU VRAM
     unsigned int buffer;
-    glGenBuffers(1, &buffer);
+    GLCall(glGenBuffers(1, &buffer));
     //Specifies the meaning of the buffer (in this case just a buffer of memory (array))
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
     //Size is in bytes | you can place NULL in place of the third parameter in case you don't want to provide initial values for the buffer
     //GL_STATIC_DRAW is the mode that this buffer will be optimized for (can be STATIC or DYNAMIC data)
     //Docs: http://docs.gl/gl4/glBufferData
-    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), basicTriangle, GL_STATIC_DRAW);
+    GLCall(glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), basicTriangle, GL_STATIC_DRAW));
 
 #elif DAV_TESTS_SHAPE == 1
 
@@ -89,10 +111,10 @@ int main()
 
     //ibo stands for Index Buffer Object | object id that represents the index buffer
     unsigned int ibo;
-    glGenBuffers(1, &ibo);
+    GLCall(glGenBuffers(1, &ibo));
     //Specifies the meaning of the buffer
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof (unsigned int), squareIndices, GL_STATIC_DRAW);
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+    GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof (unsigned int), squareIndices, GL_STATIC_DRAW));
 #endif
 
     //glVertexAttribPointer works on the boundBuffer
@@ -103,8 +125,8 @@ int main()
     //4) Whether OpenGL should normalize values for you (for example a color component from 0 to 255 to a float 0..1)
     //5) The total size of each vertex (sum of all the components)
     //6) The offset of each component (a pointer)
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-    glEnableVertexAttribArray(0);
+    GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
+    GLCall(glEnableVertexAttribArray(0));
 
     ShaderProgramSource src = parseShader("res/shaders/basic.shader");
 //    std::cout << "VERTEX SHADER" << std::endl;
@@ -114,7 +136,7 @@ int main()
 
     unsigned int shader = linkShaderProgram(src.vertex, src.fragment);
     //Bind the shader to use when drawing
-    glUseProgram(shader);
+    GLCall(glUseProgram(shader));
 
     //Will reset the buffer to be bound to nothing
     //glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -131,22 +153,22 @@ int main()
         //Second Parameter: the offset from the first item of the data buffer
         //Third Parameter: the number of indices (vertices) you want to render
         //It will draw depending ON THE BOUND buffer (you don't need to pass the buffer since openGL works as a state machine)
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        GLCall(glDrawArrays(GL_TRIANGLES, 0, 3));
 #elif DAV_TESTS_SHAPE == 1
 
         //Drawing 2 triangles | 6 INDICES | The type | Since we've assigned the indices earlier
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_INT, nullptr));
 #endif
 
         /* Swap front and back buffers */
-        glfwSwapBuffers(window);
+        GLCall(glfwSwapBuffers(window));
 
         /* Poll for and process events */
-        glfwPollEvents();
+        GLCall(glfwPollEvents());
     }
 
     //Delete the shader program to clean up resources
-    glDeleteProgram(shader);
+    GLCall(glDeleteProgram(shader));
 
     glfwTerminate();
     return 0;
