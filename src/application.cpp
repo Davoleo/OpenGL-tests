@@ -13,7 +13,7 @@
 
 #pragma region ERROR HANDLING
 
-#define ASSERT(x) if (!(x)) __builtin_trap();
+#define ASSERT(x) if (!(x)) __builtin_trap()
 
 #define GLCall(x) GLClearError(); \
 x;                                \
@@ -25,7 +25,7 @@ static void GLClearError() {
 
 static bool GLLogCall(const char* function, const char* file, int line) {
     while (GLenum error = glGetError()) {
-        std::cout << "[OpenGL Error] (" << error << ")" << function
+        std::cout << "[OpenGL Error] (" << error << ") : " << function
         << " " << file << ":" << line << std::endl;
         return false;
     }
@@ -138,6 +138,15 @@ int main()
     //Bind the shader to use when drawing
     GLCall(glUseProgram(shader));
 
+    ///--- Uniform here ---///
+    //After the shader is bound 4f because we're passing 4 floats
+    //Retrieve the location of the variable
+    GLCall(int colorLocation = glGetUniformLocation(shader, "u_Color"));
+    //Might also return -1 if the uniform in the shader is unused
+    ASSERT(colorLocation != -1);
+    GLCall(glUniform4f(colorLocation, 0.2F, 0.3F, 0.8F, 1.0F));
+    ///--- Uniform here ---///
+
     //Will reset the buffer to be bound to nothing
     //glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -156,8 +165,9 @@ int main()
         GLCall(glDrawArrays(GL_TRIANGLES, 0, 3));
 #elif DAV_TESTS_SHAPE == 1
 
-        //Drawing 2 triangles | 6 INDICES | The type | Since we've assigned the indices earlier
-        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_INT, nullptr));
+        //Uniforms are a way to pass data to the GPU every draw call
+        //Drawing 2 triangles | 6 INDICES | The type (HAS TO BE GL_UNSIGNED_INT in this case) | Since we've assigned the indices earlier
+        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 #endif
 
         /* Swap front and back buffers */
