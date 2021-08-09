@@ -35,6 +35,11 @@ static bool GLLogCall(const char* function, const char* file, int line) {
 
 #pragma endregion
 
+void handleInput(GLFWwindow* window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
 #define DAV_TESTS_SHAPE 1
 
 int main()
@@ -70,31 +75,23 @@ int main()
     //You select a buffer and a shader which are based on the status of the GPU and then the GPU draws the triangle depending on those two things
     // **State Machine**
 
+#if DAV_TESTS_SHAPE == 0
+
     //Defining the buffer outside the frame loop
     float basicTriangle[6] = {
             -0.5f, -0.5f,
-             0.0,  0.5f,
-             0.5f, -0.5f
+            0.0,  0.5f,
+            0.5f, -0.5f
     };
 
-    //Made up of 2 triangles but identical vertices are deduplicated
-    float square[] = {
-            -0.5f, -0.5f,   //0
-            0.5f, -0.5f,    //1
-            0.5f, 0.5f,     //2
-            -0.5f, 0.5f     //3
-    };
-
-    //Called index buffer
-    unsigned int squareIndices[] = {
-            0, 1, 2,
-            2, 3, 0
-    };
-
-#if DAV_TESTS_SHAPE == 0
     //Will be populated with the UID of the generated object in the GPU VRAM
     unsigned int buffer;
+    unsigned int vao;
+    GLCall(glGenVertexArrays(1, &vao));
     GLCall(glGenBuffers(1, &buffer));
+
+    GLCall(glBindVertexArray(vao));
+
     //Specifies the meaning of the buffer (in this case just a buffer of memory (array))
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
     //Size is in bytes | you can place NULL in place of the third parameter in case you don't want to provide initial values for the buffer
@@ -104,18 +101,39 @@ int main()
 
 #elif DAV_TESTS_SHAPE == 1
 
+    //Made up of 2 triangles but identical vertices are deduplicated
+    float square[] = {
+            -0.5f, -0.5f, //0
+            0.5f, -0.5f,  //1
+            0.5f, 0.5f,   //2
+            -0.5f, 0.5f,  //3
+    };
+
+    //Called index buffer
+    unsigned int squareIndices[] = {
+            0, 1, 2,
+            2, 3, 0
+    };
+
+    unsigned int vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
     //GPUs have triangles as their basic primitive shape
     //since they have the lowest number of vertices to create a flat shape with a normal that points in a single direction
     //all the other shapes are derivatives (like a square it's just 2 triangles)
     //They allow us to reuse vertices instead of having to repeat coincident vertices like when we're drawing a square or whenever there are adjacent triangles
+    unsigned int squareVBO;
+    GLCall(glGenBuffers(1, &squareVBO));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, squareVBO));
+    GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(square), square, GL_STATIC_DRAW));
 
     //ibo stands for Index Buffer Object | object id that represents the index buffer
     unsigned int ibo;
     GLCall(glGenBuffers(1, &ibo));
     //Specifies the meaning of the buffer
     GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
-    GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof (unsigned int), squareIndices, GL_STATIC_DRAW));
-#endif
+    GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(squareIndices), squareIndices, GL_STATIC_DRAW));
 
     //glVertexAttribPointer works on the boundBuffer
     //Params:
@@ -127,6 +145,11 @@ int main()
     //6) The offset of each component (a pointer)
     GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
     GLCall(glEnableVertexAttribArray(0));
+
+    //Unbind VBO and VAO once everything is setup (WE SHOULD NOT UNBIND IBO)
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+#endif
 
     ShaderProgramSource src = parseShader("res/shaders/basic.shader");
 //    std::cout << "VERTEX SHADER" << std::endl;
@@ -145,7 +168,12 @@ int main()
     //Might also return -1 if the uniform in the shader is unused
     ASSERT(colorLocation != -1);
     GLCall(glUniform4f(colorLocation, 0.2F, 0.3F, 0.8F, 1.0F));
+    float red = 0.0F;
+    float increment = 0.05F;
     ///--- Uniform here ---///
+
+    //will draw poligons in wireframe mode
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     //Will reset the buffer to be bound to nothing
     //glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -154,7 +182,12 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        //Changes the clear color (default is black)
+        //GLCall(glClearColor(0.2F, 0.3F, 0.3F, 1.0F));
+        GLCall(glClear(GL_COLOR_BUFFER_BIT));
+
+        //Handle any input that is sent
+        handleInput(window);
 
 #if DAV_TESTS_SHAPE == 0
         //Draw things when you don't have an index buffer
@@ -166,13 +199,15 @@ int main()
 #elif DAV_TESTS_SHAPE == 1
 
         //Uniforms are a way to pass data to the GPU every draw call
-        //Drawing 2 triangles | 6 INDICES | The type (HAS TO BE GL_UNSIGNED_INT in this case) | Since we've assigned the indices earlier
+        //Drawing 2 triangles [Primitive hint] | 6 INDICES | The type (HAS TO BE GL_UNSIGNED_INT in this case) | Since we've assigned the indices earlier
+        glBindVertexArray(vao);
+        GLCall(glUniform4f(colorLocation, red, 0.3F, 0.8F, 1.0F));
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 #endif
 
+        //These handle the render loop
         /* Swap front and back buffers */
         GLCall(glfwSwapBuffers(window));
-
         /* Poll for and process events */
         GLCall(glfwPollEvents());
     }
