@@ -64,6 +64,9 @@ int main()
     if (glewInit() != GLEW_OK)
         std::cout << "Error!" << std::endl;
 
+    //Should synchronize framerate with the monitor VSync or the refresh-rate
+    glfwSwapInterval(1);
+
     //Print the supported OpenGL version
     std::cout << glGetString(GL_VERSION) << std::endl;
 
