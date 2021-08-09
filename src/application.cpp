@@ -198,6 +198,13 @@ int main()
         GLCall(glDrawArrays(GL_TRIANGLES, 0, 3));
 #elif DAV_TESTS_SHAPE == 1
 
+        if (red > 1.0F)
+            increment = -0.05F;
+        else if (red < 0)
+            increment = 0.05F;
+
+        red += increment;
+
         //Uniforms are a way to pass data to the GPU every draw call
         //Drawing 2 triangles [Primitive hint] | 6 INDICES | The type (HAS TO BE GL_UNSIGNED_INT in this case) | Since we've assigned the indices earlier
         glBindVertexArray(vao);
