@@ -50,6 +50,10 @@ int main()
     if (!glfwInit())
         return -1;
 
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
     if (!window)
@@ -77,6 +81,16 @@ int main()
 
     //You select a buffer and a shader which are based on the status of the GPU and then the GPU draws the triangle depending on those two things
     // **State Machine**
+
+    ShaderProgramSource src = parseShader("res/shaders/basic.shader");
+    //    std::cout << "VERTEX SHADER" << std::endl;
+    //    std::cout << src.vertex << std::endl;
+    //    std::cout << "FRAGMENT SHADER" << std::endl;
+    //    std::cout << src.fragment << std::endl;
+
+    unsigned int shader = linkShaderProgram(src.vertex, src.fragment);
+    //Bind the shader to use when drawing
+    GLCall(glUseProgram(shader));
 
 #if DAV_TESTS_SHAPE == 0
 
@@ -118,9 +132,10 @@ int main()
             2, 3, 0
     };
 
+    //The VAO Stores the configuration (layout) that is bind via glVertexAttribPointer AND the Vertex Buffer (?)
     unsigned int vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    GLCall(glGenVertexArrays(1, &vao));
+    GLCall(glBindVertexArray(vao));
 
     //GPUs have triangles as their basic primitive shape
     //since they have the lowest number of vertices to create a flat shape with a normal that points in a single direction
@@ -146,26 +161,22 @@ int main()
     //4) Whether OpenGL should normalize values for you (for example a color component from 0 to 255 to a float 0..1)
     //5) The total size of each vertex (sum of all the components)
     //6) The offset of each component (a pointer)
+    //This is the actual line that links the VAO to the buffers because we're saying to bind the current vertex buffer
+    //to the current bound VAO at offset 0
     GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
     GLCall(glEnableVertexAttribArray(0));
 
     //Unbind VBO and VAO once everything is setup (WE SHOULD NOT UNBIND IBO)
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    GLCall(glBindVertexArray(0));
+    GLCall(glUseProgram(0));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+
 #endif
-
-    ShaderProgramSource src = parseShader("res/shaders/basic.shader");
-//    std::cout << "VERTEX SHADER" << std::endl;
-//    std::cout << src.vertex << std::endl;
-//    std::cout << "FRAGMENT SHADER" << std::endl;
-//    std::cout << src.fragment << std::endl;
-
-    unsigned int shader = linkShaderProgram(src.vertex, src.fragment);
-    //Bind the shader to use when drawing
-    GLCall(glUseProgram(shader));
 
     ///--- Uniform here ---///
     //After the shader is bound 4f because we're passing 4 floats
+    GLCall(glUseProgram(shader));
     //Retrieve the location of the variable
     GLCall(int colorLocation = glGetUniformLocation(shader, "u_Color"));
     //Might also return -1 if the uniform in the shader is unused
