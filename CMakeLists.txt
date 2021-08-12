@@ -3,7 +3,7 @@ project(OpenGL_Tests)
 
 set(CMAKE_CXX_STANDARD 14)
 
-set(SOURCE_FILES src/application.cpp src/legacy_tryangles.cpp src/shader_assembler.hpp)
+set(SOURCE_FILES src/application.cpp src/legacy_tryangles.cpp src/shader_assembler.hpp src/renderer.h src/renderer.cpp src/renderer.h src/vertex_buffer.cpp src/vertex_buffer.h src/index_buffer.cpp src/index_buffer.h src/vertex_array.cpp src/vertex_array.h src/vertex_buffer_layout.hpp)
 
 # add_library(GLFW_LIB STATIC IMPORTED)
 # set_property(TARGET GLFW_LIB PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/impl/libglfw3.a)

@@ -9,31 +9,11 @@
 //Static link
 //#define GLEW_STATIC
 
+#include "renderer.h"
+#include "vertex_buffer.h"
+#include "index_buffer.h"
 #include "shader_assembler.hpp"
-
-#pragma region ERROR HANDLING
-
-#define ASSERT(x) if (!(x)) __builtin_trap()
-
-#define GLCall(x) GLClearError(); \
-x;                                \
-ASSERT(GLLogCall(#x, __FILE__, __LINE__))
-
-static void GLClearError() {
-    while (glGetError() != GL_NO_ERROR);
-}
-
-static bool GLLogCall(const char* function, const char* file, int line) {
-    while (GLenum error = glGetError()) {
-        std::cout << "[OpenGL Error] (" << error << ") : " << function
-        << " " << file << ":" << line << std::endl;
-        return false;
-    }
-
-    return true;
-}
-
-#pragma endregion
+#include "vertex_array.h"
 
 void handleInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -132,45 +112,20 @@ int main()
             2, 3, 0
     };
 
+    vertex_buffer* squareVBO = new vertex_buffer(square, sizeof(square));
+    index_buffer* squareIBO = new index_buffer(squareIndices, 6);
+
     //The VAO Stores the configuration (layout) that is bind via glVertexAttribPointer AND the Vertex Buffer (?)
-    unsigned int vao;
-    GLCall(glGenVertexArrays(1, &vao));
-    GLCall(glBindVertexArray(vao));
-
-    //GPUs have triangles as their basic primitive shape
-    //since they have the lowest number of vertices to create a flat shape with a normal that points in a single direction
-    //all the other shapes are derivatives (like a square it's just 2 triangles)
-    //They allow us to reuse vertices instead of having to repeat coincident vertices like when we're drawing a square or whenever there are adjacent triangles
-    unsigned int squareVBO;
-    GLCall(glGenBuffers(1, &squareVBO));
-    GLCall(glBindBuffer(GL_ARRAY_BUFFER, squareVBO));
-    GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(square), square, GL_STATIC_DRAW));
-
-    //ibo stands for Index Buffer Object | object id that represents the index buffer
-    unsigned int ibo;
-    GLCall(glGenBuffers(1, &ibo));
-    //Specifies the meaning of the buffer
-    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
-    GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(squareIndices), squareIndices, GL_STATIC_DRAW));
-
-    //glVertexAttribPointer works on the boundBuffer
-    //Params:
-    //1) The index of the attribute we want to define
-    //2) The count of things inside the attribute (must be 1..4)
-    //3) The type of data that we're providing
-    //4) Whether OpenGL should normalize values for you (for example a color component from 0 to 255 to a float 0..1)
-    //5) The total size of each vertex (sum of all the components)
-    //6) The offset of each component (a pointer)
-    //This is the actual line that links the VAO to the buffers because we're saying to bind the current vertex buffer
-    //to the current bound VAO at offset 0
-    GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0));
-    GLCall(glEnableVertexAttribArray(0));
+    vertex_array vao;
+    vertex_buffer_layout layout;
+    layout.push<GL_FLOAT>(2);
+    vao.add_buffer(*squareVBO, layout);
 
     //Unbind VBO and VAO once everything is setup (WE SHOULD NOT UNBIND IBO)
-    GLCall(glBindVertexArray(0));
+    vao.unbind();
     GLCall(glUseProgram(0));
-    GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
-    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    squareVBO->unbind();
+    squareIBO->unbind();
 
 #endif
 
@@ -221,7 +176,8 @@ int main()
 
         //Uniforms are a way to pass data to the GPU every draw call
         //Drawing 2 triangles [Primitive hint] | 6 INDICES | The type (HAS TO BE GL_UNSIGNED_INT in this case) | Since we've assigned the indices earlier
-        glBindVertexArray(vao);
+        vao.bind();
+        squareIBO->bind();
         GLCall(glUniform4f(colorLocation, red, 0.3F, 0.8F, 1.0F));
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 #endif
@@ -236,6 +192,8 @@ int main()
     //Delete the shader program to clean up resources
     GLCall(glDeleteProgram(shader));
 
+    delete squareVBO;
+    delete squareIBO;
     glfwTerminate();
     return 0;
 }
