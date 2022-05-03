@@ -10,6 +10,7 @@
 
 class vertex_array {
 private:
+    //The numeric id that identifies the current object and context
     unsigned int renderer_id;
 
 public:

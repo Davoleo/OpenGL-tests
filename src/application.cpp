@@ -112,8 +112,8 @@ int main()
             2, 3, 0
     };
 
-    vertex_buffer* squareVBO = new vertex_buffer(square, sizeof(square));
-    index_buffer* squareIBO = new index_buffer(squareIndices, 6);
+    auto* squareVBO = new vertex_buffer(square, sizeof(square));
+    auto* squareIBO = new index_buffer(squareIndices, 6);
 
     //The VAO Stores the configuration (layout) that is bind via glVertexAttribPointer AND the Vertex Buffer (?)
     vertex_array vao;
@@ -192,8 +192,11 @@ int main()
     //Delete the shader program to clean up resources
     GLCall(glDeleteProgram(shader));
 
+#if DAV_TESTS_SHAPE == 1
     delete squareVBO;
     delete squareIBO;
+#endif
+
     glfwTerminate();
     return 0;
 }

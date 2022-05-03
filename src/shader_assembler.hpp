@@ -14,7 +14,7 @@ struct ShaderProgramSource
 };
 
 static ShaderProgramSource parseShader(const std::string& filepath) {
-    std::ifstream inputStream("res/shaders/basic.shader");
+    std::ifstream inputStream(filepath);
 
     enum class ShaderType {
         NONE = -1,
@@ -53,7 +53,7 @@ static unsigned int compileShader(unsigned int type, const std::string& source)
     //Get a pointer to the beginning of the shader source
     const char* src = source.c_str();
 
-    //Shader ID | Count of shaders | double pointer to the source | if the last param is null the string is espected to be null terminated
+    //Shader ID | Count of shaders | double pointer to the source | if the last param is null the string is expected to be null terminated
     glShaderSource(id, 1, &src, nullptr);
     //Compiles the shader and stores the result of the compilation in the parameter called GL_COMPILE_STATUS
     glCompileShader(id);
@@ -68,7 +68,8 @@ static unsigned int compileShader(unsigned int type, const std::string& source)
         int length;
         //Get the length of the compile logging info and assign it to the length
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-        char message[length];
+        //char* message = (char*) alloca(length * sizeof(char)); //MSVC
+        char message[length]; // only works on gcc apparently
         //Params: The shader object id | the size of the buffer | the actual used size is returned | the char buffer for the message to be stored
         glGetShaderInfoLog(id, length, &length, message);
         std::cout << "Failed to compile " << (type == GL_VERTEX_SHADER ? "Vertex" : "Fragment") << " shader!" << std::endl;

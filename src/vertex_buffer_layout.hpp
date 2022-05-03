@@ -8,6 +8,8 @@
 #include <vector>
 #include <GLEW/glew.h>
 
+#include "renderer.h"
+
 struct vertex_buffer_element {
     unsigned int type;
     unsigned int count;
@@ -23,7 +25,7 @@ struct vertex_buffer_element {
             case GL_UNSIGNED_BYTE:
                 return sizeof(unsigned char);
             default:
-                ASSERT(false);
+                return 0;
         }
     }
 };
@@ -39,20 +41,23 @@ public:
 
     template<unsigned int T>
     void push(unsigned int count) {
+        unsigned int type_size = vertex_buffer_element::get_size_of_type(T);
+        ASSERT(type_size > 0);
+
         elements.push_back({T, count, GL_FALSE});
-        stride += count * vertex_buffer_element::get_size_of_type(T);
+        stride += count * type_size;
     }
 
     inline unsigned int get_stride() const {
         return stride;
     }
 
-    inline const std::vector<vertex_buffer_element> get_elements() const {
+    inline const std::vector<vertex_buffer_element>& get_elements() const {
         return elements;
     }
 };
 
-//Template Specialization
+//Template Specializations
 //template<>
 //void vertex_buffer_layout::push<float>(unsigned int count) {
 //    elements.push_back({GL_FLOAT, count, GL_FALSE});
