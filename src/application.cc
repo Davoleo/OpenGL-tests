@@ -12,7 +12,7 @@
 #include "renderer.h"
 #include "vertex_buffer.h"
 #include "index_buffer.h"
-#include "shader_assembler.hpp"
+#include "shader_assembler.hh"
 #include "vertex_array.h"
 
 void handleInput(GLFWwindow* window) {
