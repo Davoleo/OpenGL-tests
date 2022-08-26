@@ -2,7 +2,7 @@
 // Created by Davoleo on 04/03/2021.
 //
 
-#include <GLEW/glew.h>
+#include <GL/glew.h>
 
 void beginGLTryangles() {
     //Legacy OpenGL Way to create a triangle

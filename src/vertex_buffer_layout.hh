@@ -6,7 +6,7 @@
 #define OPENGL_TESTS_VERTEX_BUFFER_LAYOUT_HPP
 
 #include <vector>
-#include <GLEW/glew.h>
+#include <GL/glew.h>
 
 #include "renderer.h"
 

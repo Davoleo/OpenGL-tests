@@ -5,7 +5,7 @@
 #ifndef OPENGL_TESTS_RENDERER_H
 #define OPENGL_TESTS_RENDERER_H
 
-#include <GLEW/glew.h>
+#include <GL/glew.h>
 
 #pragma region ERROR HANDLING
 

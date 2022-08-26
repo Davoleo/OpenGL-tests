@@ -1,30 +1,30 @@
 # Compiler settings
-CC = g++
+CC = c++
 WARN_FLAGS = -Wall -Wextra
-INCLUDE_FLAG = -Ilib/include
-LIB_FLAG = -Llib/impl
 
 # C++ Standard
 STDVER_FLAG = -std=c++17
 
 # libraries
-GLFW_FLAG = -lglfw3
-GLEW_FLAG = -l:glew32.lib
-GLEWS_FLAG = -l:glew32s.lib
+GLFW_FLAGS = -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit
+GLEW_FLAG = -lGLEW
 
 BUILD = build
 BIN = bin
 
+SRC_FILES = $(wildcard src/*.cc)
+OBJ_FILES = $(patsubst src/%.cc, build/%.o, $(SRC_FILES))
+
 ####
 
-main: dircheck $(BIN)/application
-	./$(BUILD)/application
+all: dircheck $(BIN)/application
+	./$(BIN)/application
 
-$(BIN)/application: $(wildcard build/*.o)
-	$(CC) $(LIB_FLAG) $(GLFW_FLAG) $(GLEW_FLAG) $(GLEWS_FLAG) $^ -o $@
+$(BIN)/application: $(OBJ_FILES)
+	$(CC) $(GLFW_FLAGS) $(GLEW_FLAG) $^ -o $@
 
-$(BUILD)/*.o: $(wildcard src/*.cc)
-	$(CC) $(WARN_FLAGS) $(INCLUDE_FLAG) $(STDVER_FLAG) -c $^ -o $@
+$(OBJ_FILES): $(SRC_FILES)
+	$(CC) $(WARN_FLAGS) $(STDVER_FLAG) -c $< -o $@
 
 dircheck:
 ifeq ("$(wildcard $(BIN))", "")
