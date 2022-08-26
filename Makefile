@@ -8,23 +8,40 @@ LIB_FLAG = -Llib/impl
 STDVER_FLAG = -std=c++17
 
 # libraries
-GLFW_FLAG = -lglfw
+GLFW_FLAG = -lglfw3
 GLEW_FLAG = -l:glew32.lib
 GLEWS_FLAG = -l:glew32s.lib
 
 BUILD = build
+BIN = bin
 
-output_dir = build
+####
 
-main:
-	$(BUILD)/application
+main: dircheck $(BIN)/application
 	./$(BUILD)/application
 
-$(BUILD)/application: $(wildcard build/obj/*.o)
-	$(CC) $(LIB_FLAG) $(GLFW_FLAG) $(GLEW_FLAG) $(GLEWS_FLAG) ^ -o @
+$(BIN)/application: $(wildcard build/*.o)
+	$(CC) $(LIB_FLAG) $(GLFW_FLAG) $(GLEW_FLAG) $(GLEWS_FLAG) $^ -o $@
 
-$(BUILD)/obj/*.o: $(wildcard src/*.cc)
-	$(CC) $(WARN_FLAGS) $(INCLUDE_FLAG) $(STDVER_FLAG) -c ^ -o @
+$(BUILD)/*.o: $(wildcard src/*.cc)
+	$(CC) $(WARN_FLAGS) $(INCLUDE_FLAG) $(STDVER_FLAG) -c $^ -o $@
+
+dircheck:
+ifeq ("$(wildcard $(BIN))", "")
+	@echo -n 'Creating bin/ folder -> '
+	@ mkdir $(BIN)
+	@echo done
+endif
+ifeq ("$(wildcard $(BUILD))", "")
+	@echo -n 'Creating build/ folder -> '
+	@ mkdir $(BUILD)
+	@echo done
+endif
 
 clean:
-	$(BUILD)/*
+	rm $(BUILD)/*
+	rm $(BIN)/*
+
+cleanall:
+	rm -r $(BUILD)
+	rm -r $(BIN)
