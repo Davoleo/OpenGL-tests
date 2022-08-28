@@ -1,13 +1,8 @@
-#define GLFW_DLL
-
 #include <GLEW/glew.h>
 #include <GLFW/glfw3.h>
 
 #include <iostream>
 #include <sstream>
-
-//Static link
-//#define GLEW_STATIC
 
 #include "renderer.h"
 #include "vertex_buffer.h"

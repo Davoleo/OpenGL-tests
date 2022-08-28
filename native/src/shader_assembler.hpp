@@ -68,8 +68,8 @@ static unsigned int compileShader(unsigned int type, const std::string& source)
         int length;
         //Get the length of the compile logging info and assign it to the length
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-        //char* message = (char*) alloca(length * sizeof(char)); //MSVC
-        char message[length]; // only works on gcc apparently
+        char* message = (char*) alloca(length * sizeof(char)); //MSVC
+        //char message[length]; // only works on gcc apparently
         //Params: The shader object id | the size of the buffer | the actual used size is returned | the char buffer for the message to be stored
         glGetShaderInfoLog(id, length, &length, message);
         std::cout << "Failed to compile " << (type == GL_VERTEX_SHADER ? "Vertex" : "Fragment") << " shader!" << std::endl;

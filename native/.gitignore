@@ -1,7 +1,8 @@
-# library implementation files
-lib/impl
-# library declaration files (headers)
-lib/include
+# library implementation and include header files
+dependencies
+
+# binary files
+bin
 
 # CMake Build Directories
 cmake-build-debug
