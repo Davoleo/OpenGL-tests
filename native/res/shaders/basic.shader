@@ -28,6 +28,7 @@ layout(location = 0) out vec4 color;
 uniform vec4 u_Color;
 
 void main() {
+    //Assigning color [The output color of each fragment [pixel]] to the uniform color
     color = u_Color;
     //Old fixed color
     //vec4(0.2, 0.3, 0.8, 1.0);

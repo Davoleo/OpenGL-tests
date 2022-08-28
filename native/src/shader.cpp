@@ -1,19 +1,31 @@
-//
-// Created by Davoleo on 18/05/2021.
-//
-
-#ifndef OPENGL_TESTS_SHADER_ASSEMBLER_HPP
-#define OPENGL_TESTS_SHADER_ASSEMBLER_HPP
+#include "shader.h"
 
 #include <fstream>
+#include <iostream>
+#include <sstream>
 
-struct ShaderProgramSource
+#include "renderer.h"
+#include "GLEW/glew.h"
+
+shader::shader(const std::string& filepath) : filepath(filepath), rendererId(0)
 {
-    std::string vertex;
-    std::string fragment;
-};
+    ShaderProgramSource src = parse_shader(filepath);
+    //    std::cout << "VERTEX SHADER" << std::endl;
+    //    std::cout << src.vertex << std::endl;
+    //    std::cout << "FRAGMENT SHADER" << std::endl;
+    //    std::cout << src.fragment << std::endl;
 
-static ShaderProgramSource parseShader(const std::string& filepath) {
+    unsigned int shader = create_shader(src.vertex, src.fragment);
+    rendererId = shader;
+}
+
+shader::~shader()
+{
+    //Delete the shader program to clean up resources
+    GLCall(glDeleteProgram(rendererId));
+}
+
+ShaderProgramSource shader::parse_shader(const std::string& filepath) {
     std::ifstream inputStream(filepath);
 
     enum class ShaderType {
@@ -46,7 +58,7 @@ static ShaderProgramSource parseShader(const std::string& filepath) {
 /// \param type the type of shader to compile
 /// \param source the string that contains the source code of the shader program
 /// \return an UID corresponding to the compiled shader (ready to be linked)
-static unsigned int compileShader(unsigned int type, const std::string& source)
+unsigned int shader::compile_shader(unsigned int type, const std::string& source)
 {
     //Creates a shader handle and returns the id
     unsigned int id = glCreateShader(type);
@@ -68,7 +80,7 @@ static unsigned int compileShader(unsigned int type, const std::string& source)
         int length;
         //Get the length of the compile logging info and assign it to the length
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-        char* message = (char*) alloca(length * sizeof(char)); //MSVC
+        char* message = (char*)alloca(length * sizeof(char)); //MSVC
         //char message[length]; // only works on gcc apparently
         //Params: The shader object id | the size of the buffer | the actual used size is returned | the char buffer for the message to be stored
         glGetShaderInfoLog(id, length, &length, message);
@@ -87,12 +99,12 @@ static unsigned int compileShader(unsigned int type, const std::string& source)
 /// \param vertexShader
 /// \param fragmentShader
 /// \return unique identifier to the linked shader program
-static unsigned int linkShaderProgram(const std::string& vertexShader, const std::string& fragmentShader)
+unsigned int shader::create_shader(const std::string& vertexShader, const std::string& fragmentShader)
 {
     //Creates an empty shader program object shader can be attached to
     unsigned int program = glCreateProgram();
-    unsigned int vertexSh = compileShader(GL_VERTEX_SHADER, vertexShader);
-    unsigned int fragmentSh = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
+    unsigned int vertexSh = compile_shader(GL_VERTEX_SHADER, vertexShader);
+    unsigned int fragmentSh = compile_shader(GL_FRAGMENT_SHADER, fragmentShader);
 
     //Attaching the two shaders with the empty program
     glAttachShader(program, vertexSh);
@@ -111,4 +123,38 @@ static unsigned int linkShaderProgram(const std::string& vertexShader, const std
     return program;
 }
 
-#endif //OPENGL_TESTS_SHADER_ASSEMBLER_HPP
+void shader::bind() const
+{
+    GLCall(glUseProgram(rendererId));
+}
+
+void shader::unbind() const
+{
+    GLCall(glUseProgram(0));
+}
+
+void shader::set_uniform1f(const std::string& name, float value)
+{
+    GLCall(glUniform1f(get_uniform_location(name), value));
+}
+
+void shader::set_uniform4f(const std::string& name, float v0, float v1, float v2, float v3)
+{
+    GLCall(glUniform4f(get_uniform_location(name), v0, v1, v2, v3));
+}
+
+int shader::get_uniform_location(const std::string& name)
+{
+    if (uniformLocationCache.find(name) != uniformLocationCache.end())
+        return uniformLocationCache[name];
+
+    //Retrieve the location of the variable | Same name of the uniform in shader
+    GLCall(int colorLocation = glGetUniformLocation(rendererId, name.c_str()));
+
+    //Might also return -1 if the uniform in the shader is unused [and was automatically removed]
+    if (colorLocation == -1)
+        std::cout << "Warning: Uniform '" << name << "' doesn't exist!" << std::endl;
+
+    uniformLocationCache[name] = colorLocation;
+    return colorLocation;
+}

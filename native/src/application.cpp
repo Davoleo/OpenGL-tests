@@ -7,7 +7,7 @@
 #include "renderer.h"
 #include "vertex_buffer.h"
 #include "index_buffer.h"
-#include "shader_assembler.hpp"
+#include "shader.h"
 #include "vertex_array.h"
 
 void handleInput(GLFWwindow* window) {
@@ -57,15 +57,9 @@ int main()
     //You select a buffer and a shader which are based on the status of the GPU and then the GPU draws the triangle depending on those two things
     // **State Machine**
 
-    ShaderProgramSource src = parseShader("res/shaders/basic.shader");
-    //    std::cout << "VERTEX SHADER" << std::endl;
-    //    std::cout << src.vertex << std::endl;
-    //    std::cout << "FRAGMENT SHADER" << std::endl;
-    //    std::cout << src.fragment << std::endl;
-
-    unsigned int shader = linkShaderProgram(src.vertex, src.fragment);
+    shader shader("res/shaders/basic.shader");
     //Bind the shader to use when drawing
-    GLCall(glUseProgram(shader));
+    shader.bind();
 
 #if DAV_TESTS_SHAPE == 0
 
@@ -116,22 +110,12 @@ int main()
     layout.push<GL_FLOAT>(2);
     vao.add_buffer(*squareVBO, layout);
 
-    //Unbind VBO and VAO once everything is setup (WE SHOULD NOT UNBIND IBO)
-    vao.unbind();
-    GLCall(glUseProgram(0));
-    squareVBO->unbind();
-    squareIBO->unbind();
-
 #endif
 
     ///--- Uniform here ---///
-    //After the shader is bound 4f because we're passing 4 floats
-    GLCall(glUseProgram(shader));
-    //Retrieve the location of the variable
-    GLCall(int colorLocation = glGetUniformLocation(shader, "u_Color"));
-    //Might also return -1 if the uniform in the shader is unused
-    ASSERT(colorLocation != -1);
-    GLCall(glUniform4f(colorLocation, 0.2F, 0.3F, 0.8F, 1.0F));
+    shader.bind();
+    shader.set_uniform4f("u_Color", 0.2F, 0.3F, 0.8F, 1.0F);
+
     float red = 0.0F;
     float increment = 0.05F;
     ///--- Uniform here ---///
@@ -139,8 +123,10 @@ int main()
     //will draw poligons in wireframe mode
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    //Will reset the buffer to be bound to nothing
-    //glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//Unbind VBO and VAO once everything is setup
+    vao.unbind();
+    squareVBO->unbind();
+    squareIBO->unbind();
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -173,7 +159,7 @@ int main()
         //Drawing 2 triangles [Primitive hint] | 6 INDICES | The type (HAS TO BE GL_UNSIGNED_INT in this case) | Since we've assigned the indices earlier
         vao.bind();
         squareIBO->bind();
-        GLCall(glUniform4f(colorLocation, red, 0.3F, 0.8F, 1.0F));
+        shader.set_uniform4f("u_Color", red, 0.3F, 0.8F, 1.0F);
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 #endif
 
@@ -183,9 +169,6 @@ int main()
         /* Poll for and process events */
         GLCall(glfwPollEvents());
     }
-
-    //Delete the shader program to clean up resources
-    GLCall(glDeleteProgram(shader));
 
 #if DAV_TESTS_SHAPE == 1
     delete squareVBO;

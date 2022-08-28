@@ -159,14 +159,15 @@
     <ClInclude Include="dependencies\include\GLEW\wglew.h" />
     <ClInclude Include="dependencies\include\GLFW\glfw3.h" />
     <ClInclude Include="dependencies\include\GLFW\glfw3native.h" />
+    <ClInclude Include="src\shader.h" />
     <ClInclude Include="src\index_buffer.h" />
     <ClInclude Include="src\renderer.h" />
-    <ClInclude Include="src\shader_assembler.hpp" />
     <ClInclude Include="src\vertex_array.h" />
     <ClInclude Include="src\vertex_buffer.h" />
     <ClInclude Include="src\vertex_buffer_layout.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\shader.cpp" />
     <ClCompile Include="src\application.cpp" />
     <ClCompile Include="src\index_buffer.cpp" />
     <ClCompile Include="src\legacy_tryangles.cpp" />
