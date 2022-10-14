@@ -6,7 +6,8 @@
 #define OPENGL_TESTS_VERTEX_ARRAY_H
 
 #include "vertex_buffer.h"
-#include "vertex_buffer_layout.hpp"
+
+class vertex_buffer_layout;
 
 class vertex_array {
 private:

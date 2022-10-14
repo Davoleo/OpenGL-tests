@@ -4,6 +4,7 @@
 
 #include "renderer.h"
 #include "vertex_buffer.h"
+#include "vertex_buffer_layout.hpp"
 
 vertex_buffer::vertex_buffer(const void *data, unsigned int size) {
 

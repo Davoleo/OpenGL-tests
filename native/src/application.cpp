@@ -9,6 +9,7 @@
 #include "index_buffer.h"
 #include "shader.h"
 #include "vertex_array.h"
+#include "vertex_buffer_layout.hpp"
 
 void handleInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -61,32 +62,6 @@ int main()
     //Bind the shader to use when drawing
     shader.bind();
 
-#if DAV_TESTS_SHAPE == 0
-
-    //Defining the buffer outside the frame loop
-    float basicTriangle[6] = {
-            -0.5f, -0.5f,
-            0.0,  0.5f,
-            0.5f, -0.5f
-    };
-
-    //Will be populated with the UID of the generated object in the GPU VRAM
-    unsigned int buffer;
-    unsigned int vao;
-    GLCall(glGenVertexArrays(1, &vao));
-    GLCall(glGenBuffers(1, &buffer));
-
-    GLCall(glBindVertexArray(vao));
-
-    //Specifies the meaning of the buffer (in this case just a buffer of memory (array))
-    GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
-    //Size is in bytes | you can place NULL in place of the third parameter in case you don't want to provide initial values for the buffer
-    //GL_STATIC_DRAW is the mode that this buffer will be optimized for (can be STATIC or DYNAMIC data)
-    //Docs: http://docs.gl/gl4/glBufferData
-    GLCall(glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), basicTriangle, GL_STATIC_DRAW));
-
-#elif DAV_TESTS_SHAPE == 1
-
     //Made up of 2 triangles but identical vertices are deduplicated
     float square[] = {
             -0.5f, -0.5f, //0
@@ -110,8 +85,6 @@ int main()
     layout.push<GL_FLOAT>(2);
     vao.add_buffer(*squareVBO, layout);
 
-#endif
-
     ///--- Uniform here ---///
     shader.bind();
     shader.set_uniform4f("u_Color", 0.2F, 0.3F, 0.8F, 1.0F);
@@ -128,25 +101,17 @@ int main()
     squareVBO->unbind();
     squareIBO->unbind();
 
+    renderer renderer;
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
-        /* Render here */
-        //Changes the clear color (default is black)
-        //GLCall(glClearColor(0.2F, 0.3F, 0.3F, 1.0F));
-        GLCall(glClear(GL_COLOR_BUFFER_BIT));
+        /* Rendering here! */
+        renderer.clear();
 
         //Handle any input that is sent
         handleInput(window);
 
-#if DAV_TESTS_SHAPE == 0
-        //Draw things when you don't have an index buffer
-        //First parameter: the primitive you want to render
-        //Second Parameter: the offset from the first item of the data buffer
-        //Third Parameter: the number of indices (vertices) you want to render
-        //It will draw depending ON THE BOUND buffer (you don't need to pass the buffer since openGL works as a state machine)
-        GLCall(glDrawArrays(GL_TRIANGLES, 0, 3));
-#elif DAV_TESTS_SHAPE == 1
 
         if (red > 1.0F)
             increment = -0.05F;
@@ -155,19 +120,17 @@ int main()
 
         red += increment;
 
+        shader.bind();
         //Uniforms are a way to pass data to the GPU every draw call
-        //Drawing 2 triangles [Primitive hint] | 6 INDICES | The type (HAS TO BE GL_UNSIGNED_INT in this case) | Since we've assigned the indices earlier
-        vao.bind();
-        squareIBO->bind();
         shader.set_uniform4f("u_Color", red, 0.3F, 0.8F, 1.0F);
-        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
-#endif
+        //Drawing 2 triangles [Primitive hint] | 6 INDICES | The type (HAS TO BE GL_UNSIGNED_INT in this case) | Since we've assigned the indices earlier
+        renderer.draw(vao, *squareIBO, shader);
 
         //These handle the render loop
         /* Swap front and back buffers */
-        GLCall(glfwSwapBuffers(window));
+        glfwSwapBuffers(window);
         /* Poll for and process events */
-        GLCall(glfwPollEvents());
+        glfwPollEvents();
     }
 
 #if DAV_TESTS_SHAPE == 1
