@@ -15,6 +15,7 @@
 layout(location = 0) in vec4 position;
 layout(location = 1) in vec2 texCoord;
 
+//Varying to pass texture coordinates to the fragment shader
 out vec2 v_TexCoord;
 
 void main() {
@@ -28,6 +29,7 @@ void main() {
 
 layout(location = 0) out vec4 color;
 
+//Varying to accept texture coordinates in the fragment shader
 in vec2 v_TexCoord;
 
 //Convention: what starts with u_ is a uniform variable
@@ -42,4 +44,7 @@ void main() {
     color = texColor;
     //Old fixed color
     //vec4(0.2, 0.3, 0.8, 1.0);
+
+    //Old Pulsing color
+    //color = uColor
 }

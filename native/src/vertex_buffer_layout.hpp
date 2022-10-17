@@ -40,8 +40,8 @@ public:
     }
 
     template<unsigned int T>
-    void push(unsigned int count) {
-        unsigned int type_size = vertex_buffer_element::get_size_of_type(T);
+    void push(const unsigned int count) {
+        const unsigned int type_size = vertex_buffer_element::get_size_of_type(T);
         ASSERT(type_size > 0);
 
         elements.push_back({T, count, GL_FALSE});

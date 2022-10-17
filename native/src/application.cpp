@@ -62,29 +62,31 @@ int main()
     shader.bind();
 
     //Made up of 2 triangles but identical vertices are deduplicated
+    //  The 2 floats at the right in each row represent texture coordinates
     float square[] = {
             -0.5f, -0.5f, 0.0f, 0.0f, //0
             0.5f, -0.5f, 1.0f, 0.0f,  //1
-            0.5f, 0.5f, 1.0f, 1.0f  //2
+            0.5f, 0.5f, 1.0f, 1.0f,  //2
             -0.5f, 0.5f, 0.0f, 1.0f //3
     };
 
     //Called index buffer
-    unsigned int squareIndices[] = {
+    unsigned int square_indices[] = {
             0, 1, 2,
             2, 3, 0
     };
 
-    vertex_buffer vbo(square, 4 * 4 * sizeof(float));
-
-    //The VAO Stores the configuration (layout) that is bind via glVertexAttribPointer AND the Vertex Buffer (?)
+	//The VAO Stores the configuration (layout) that is bind via glVertexAttribPointer AND the Vertex Buffer (?)
     vertex_array vao;
+
+	vertex_buffer vbo(square, 4 * 4 * sizeof(float)); //4 Floats per vertex
+
     vertex_buffer_layout layout;
     layout.push<GL_FLOAT>(2);
     layout.push<GL_FLOAT>(2);
-    vao.add_buffer(vbo, layout);
 
-    index_buffer ibo(squareIndices, 6);
+    vao.add_buffer(vbo, layout);
+    index_buffer ibo(square_indices, 6);
 
     ///--- Uniform here ---///
     shader.bind();

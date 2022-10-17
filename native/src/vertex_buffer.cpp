@@ -7,8 +7,6 @@
 #include "vertex_buffer_layout.hpp"
 
 vertex_buffer::vertex_buffer(const void *data, unsigned int size) {
-
-
     GLCall(glGenBuffers(1, &renderer_id));
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, renderer_id));
     GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));

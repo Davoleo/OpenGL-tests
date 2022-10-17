@@ -1,14 +1,14 @@
 #pragma once
 
-#include "renderer.h"
+#include <string>
 
 class texture
 {
 private:
-	unsigned int rendererID;
-	std::string filepath;
-	unsigned char* localbuffer;
-	int width, height, bpp;
+	unsigned int renderer_id_;
+	std::string filepath_;
+	unsigned char* local_buffer_;
+	int width_, height_, bpp_;
 
 public:
 	texture(const std::string& path);
@@ -19,12 +19,12 @@ public:
 
 	inline int get_width() const
 	{
-		return width;
+		return width_;
 	}
 
 	inline int get_height() const
 	{
-		return height;
+		return height_;
 	}
 };
 

@@ -33,10 +33,10 @@ void vertex_array::add_buffer(const vertex_buffer &vbo, const vertex_buffer_layo
     //glVertexAttribPointer works on the boundBuffer
     //Params:
     //1) The index of the attribute we want to define
-    //2) The count of things inside the attribute (must be 1..4)
+    //2) The count of things inside ONE attribute (must be 1..4)
     //3) The type of data that we're providing
     //4) Whether OpenGL should normalize values for you (for example a color component from 0 to 255 to a float 0..1)
-    //5) The total size of each vertex (sum of all the components)
+    //5) The total size of each vertex (sum of all the attributes)
     //6) The offset of each component (a pointer)
     //This is the actual line that links the VAO to the buffers because we're saying to bind the current vertex buffer
     //to the current bound VAO at offset 0
