@@ -100,5 +100,8 @@
     <Image Include="res\textures\kurisu.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\textures\rouxls_kaard.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

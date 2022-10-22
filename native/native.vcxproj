@@ -190,6 +190,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\textures\kurisu.png" />
+    <Image Include="res\textures\rouxls_kaard.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

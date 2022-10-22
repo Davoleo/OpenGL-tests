@@ -76,6 +76,25 @@ int main()
             2, 3, 0
     };
 
+    //Blending:
+    //How do we render something that is partially/fully transparent
+    //Blending determines how to combine the output color with what is already on the buffer of the GPU
+    //Output: The color output from the fragment shader [source]
+    //Target buffer: buffer the fragment shader is drawing to [destination]
+    //
+    //3 Ways to control blending:
+    //- glEnabled(GL_BLEND) - glDisable(GL_BLEND) | disabled by default
+    //- glBlendFunc(src, dest) | controls how to blend the two RGBA colors -- by default src is kept as is [multiplied by 1] & old dest is destroyed [multiplied by 0]
+    //  - src by default is GL_ONE
+	//  - dest by default is GL_ZERO
+    //- glBlendEquation(mode)
+    //  - mode specifies how to combine src and dest | by default mode is GL_FUNC_ADD
+    //Enable Basic Blending
+    GLCall(glEnable(GL_BLEND));
+    //Blending function:
+    //source alpha value  = 1 - source alpha values
+    GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
 	//The VAO Stores the configuration (layout) that is bind via glVertexAttribPointer AND the Vertex Buffer (?)
     vertex_array vao;
 
@@ -99,7 +118,7 @@ int main()
     //will draw poligons in wireframe mode
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    texture texture("res/textures/kurisu.png");
+    texture texture("res/textures/rouxls_kaard.png");
     //Bound to slot 0 so uniform value should be 0
     texture.bind(); 
     shader.set_uniform1i("u_Texture", 0);
